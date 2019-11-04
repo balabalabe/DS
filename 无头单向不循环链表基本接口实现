@@ -1,0 +1,163 @@
+typedef struct SeqList{
+    int* array;
+    int size;
+    int capicity;
+}SeqList;
+
+// 基本增删查改接口
+void SeqListInit(SeqList* L, int capacity){//初始化顺序表
+/*申请(malloc)N个数组空间,元素个数(size)置为0,空间大小(capacity)置为N*/
+    assert(L);
+    L->array=(int*)malloc(sizeof(int)*capacity);
+    if(L->array==0){
+        printf("初始化失败\n");
+        return ;
+    }
+    L->size=0;
+    L->capacity=capacity;
+}
+
+void SeqListDestory(SeqList* L){//销毁顺序表
+/*释放(free)顺序表资源,并使数组指向NULL,size和capacity置为0*/
+    assert(L);
+    free(L->array);
+    L->array=NULL;
+    L->size=0;
+    L->capacity=0;
+}
+
+void CheckCapacity(SeqList* L){//检查顺序表容量是否够用
+/*当顺序表填满时对其进行扩容,用一个临时指针申请容量,然后数组指针指向临时指针,最后更新容量大小(capacity)*/
+    assert(L);
+    if(L->size >= L->capacity){//数据元素个数大于等于空间容量时,则需要进行扩容
+        int* temp=(int*)realloc(L->array,2*sizeof(int)*L->capacity);//扩容两倍
+        if(temp==NULL){
+            printf("扩容失败");
+            return ;
+        }
+        else{
+            L->array=temp;
+            L->capacity=2*L->capacity;
+        }
+    }
+}
+
+void SeqListPushBack(SeqList* L, int x){//尾插
+/*检查容量,然后在尾部插入元素,更新元素个数(size)*/
+    assert(L);
+    CheckCapacity(L);
+    L->array[L->size]=x;
+    L->size++;
+    printf("插入成功\n");
+}
+
+void SeqListPopBack(SeqList* L){//尾删
+/*检查顺序表是否为空,size-1(不需要释放掉,更改元素范围即可)*/
+    assert(L);
+    if(L->size==0){
+        printf("链表为空,无数据可删\n");
+        return ;
+    }
+    L->size--;
+}
+
+void SeqListPushFront(SeqList* L, int x){//头插
+/*检查容量,然后将所有元素往后挪一格,首部插入元素,更新元素个数(size)*/
+    assert(L);
+    CheckCapacity(L);
+    for(int i=L->size;i>0;i++){
+        L->array[size]=L->array[size-1];
+    }
+    L->array[0]=x;
+    L->size++;
+}
+
+void SeqListPopFront(SeqList* L){//头删
+/*检查顺序表是否为空,用后一个元素覆盖前一个元素(第一个元素就被覆盖了,相当于删除了)*/
+    assert(L);
+    if(L->size==0){
+        printf("链表为空,无数据可删\n");
+        return ;
+    }
+    for(int i=0;i<L->size;i++){
+        L->array[i]=L->array[i+1];
+    }
+    L->size--;
+}
+
+int SeqListFind(SeqList* L, int x){//查找顺序表中元素x,并返回下标,失败返回-1
+/*检查顺序表是否为空,遍历顺序表,返回目标元素下标*/
+    assert(L);
+    if(L->array==0){
+        printf("链表为空\n");
+        return ;
+    }
+    for(int i=0;i<L->size;i++){
+        if(L->array[i]==x){
+            printf("找到目标元素");
+            return i;//返回下标
+        }
+    }
+    printf("目标元素不在表内");
+    return -1;
+}
+
+void SeqListInsert(SeqList* L, int pos, int x){//任意位置插入元素
+/*将指定下标后元素全部后挪一位,然后将元素插入指定下标*/
+    assert(L);
+    CheckCapacity(L);
+    for(int i=L->size;i>pos;i--){
+        L->array[i]=L->array[i-1];
+    }
+    L->array[pos]=x;
+    L->size++;
+}
+
+void SeqListErase(SeqList* L, int pos){//任意位置删除元素
+/*检查指定下标是否越界,然后将指定下标后元素全部往前挪一位,将指定下标覆盖(相当于被删除了),更新元素个数(size)*/
+    assert(L);
+    if(pos<=0 || pos>=L->size){
+        printf("越界");
+        return ;
+    }
+    for(int i=pos;i<L->size-1;i++){
+        L->array[i]=L->array[i+1];
+    }
+    L->size--;
+}
+
+void SeqListEmpty(SeqList* L){//判断顺序表是否为空
+    assert(L);
+    if(L->size==0){
+        printf("顺序表为空");
+    }
+}
+
+void SeqListRemove(SeqList* L, int x){//删除x这个元素
+/*先找到元素x在顺序表中的下标(SeqListFind),然后用任意位置删除函数(SeqListErase)删除x这个元素*/
+    assert(L);
+    int pos=SeqListFind(x);
+    if(pos!=-1){
+        SeqListErase(L,pos);
+    }
+}
+
+void SeqListModify(SeqList* L, int pos, int x){//将下标为pos的元素的值修改为x
+    assert(L);
+    L->array[pos]=x;
+}
+
+void SeqListPrint(SeqList* L){//打印顺序表
+/*遍历顺序表,将顺序表元素逐个打印出来*/
+    assert(L);
+    for(int i=0;i<L->capacity;i++){
+        printf("%d ",L->array[i]);
+    }
+    printf("\n");
+}
+
+void Swap(int* x,int* y){
+    int temp=*x;
+    *x=*y;
+    *y=temp;
+}
