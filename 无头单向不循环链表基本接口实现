@@ -1,0 +1,166 @@
+typedef struct ListNode{//定义链表结点
+	int data;
+	struct ListNode* next;
+}ListNode;
+typedef struct List{
+	ListNode* head;
+}List;
+
+//基本的增删改查接口
+void ListInit(List* L){//初始化链表
+/*头结点置为空(因为是无头链表，没有实际意义上的头结点)*/
+	assert(L);
+	L->head = NULL;
+}
+
+void ListDestory(List* L){//销毁链表
+/*遍历链表,逐个释放结点资源,注意在释放结点前先保存结点的next指针*/
+	assert(L);
+	for (ListNode* cur = L->head; cur != NULL; cur = cur->next){
+		ListNode* next = cur->next;//为什么要将next置为cur->next
+		free(cur);//因为释放cur的时候会连cur->next一起丢失
+	}
+	L->head = NULL;
+}
+
+ListNode* BuyListNode(int x){//申请一个结点
+/*先给结点申请空间,然后数据域存放x,指针域指向NULL(因为申请的是最后一个结点)*/
+	ListNode* node = (ListNode*)malloc(sizeof(ListNode));
+	assert(node);
+	node->data = x;
+	node->next = NULL;
+	return node;
+}
+
+void ListPrint(List* L){//打印链表
+/*遍历链表逐个打印结点*/
+	assert(L);
+	for (ListNode *cur = L->head; cur != NULL; cur = cur->next){
+		printf("%d->", cur->data);
+	}
+	printf("NULL\n");
+}
+
+void ListPushFront(List* L, int x){//头插
+/*先申请结点空间,然后新结点的next指向原头结点,新节点作为新的头结点*/
+	assert(L);
+	ListNode* node = BuyListNode(x);
+	assert(node);
+	node->next = L->head;
+	L->head = node;//新节点作为新的头结点
+}
+
+void ListPopFront(List* L){//头删
+/*直接删头结点会导致链表的后续结点失踪,先用一个临时指针指向头结点,使链表的下一个结点成为新的头结点,释放临时指针*/
+	assert(L != NULL);//保证链表存在
+	assert(L->head);//保证链表不为空
+	ListNode* temp = L->head;
+	L->head = temp->next;//原头结点的下一个结点成为新的头结点
+	free(temp);//释放临时指针其实就是释放原头结点
+}
+
+void ListPushBack(List* L, int x){//尾插
+/*如果链表为空,头插和尾插是一样的;如果不为空,需要遍历链表,找到最后一个结点,然后在其后面添加新节点*/
+	assert(L);
+	if (L->head == NULL) {
+		ListPushFront(L, x);
+		return;
+	}
+	ListNode *node = BuyListNode(x);
+	assert(node);
+	ListNode* cur = L->head;
+	for (; cur->next != NULL; cur = cur->next){}//找出最后一个结点
+	cur->next = node;//在链表尾部添加新节点
+}
+
+void ListPopBack(List* L){//尾删
+/*当只有一个结点时,头删尾删都一样;多个结点时,找出倒数第二个结点,释放最后一个结点,最后指向NULL*/
+	assert(L);
+	assert(L->head);
+	ListNode* cur = L->head;
+	if (cur->next == NULL){//如果只有一个结点,直接头删
+		ListPopFront(L);
+		return;
+	}
+	for (; cur->next->next != NULL; cur = cur->next){}//找出倒数第二个结点 
+	free(cur->next);//释放最后一个结点
+	cur->next = NULL;//倒数第二个结点的next指向NULL
+}
+
+ListNode* ListFind(List* L, int x){//查找给定数据在链表中的位置
+/*遍历链表逐个比较,返回数据域满足条件的结点*/
+	assert(L);
+	assert(L->head);
+	ListNode* cur = L->head;
+	while (cur != NULL){
+		if (cur->data == x){
+			return cur;
+		}
+		cur = cur->next;
+	}
+	return NULL;
+}
+
+void ListInsertAfter(ListNode* pos, int x){//在指定位置pos后面插入结点
+/*先申请结点空间,然后新结点指向pos结点的下一个结点,pos结点的next置为新结点*/
+	assert(pos->next == NULL);
+	ListNode* node = BuyListNode(x);
+	node->next = pos->next;
+	pos->next = node;
+}
+
+void ListErase(List* L, ListNode* pos){//删除指定位置pos上的结点
+/*用双next法定位到pos结点的前一个结点,接管pos后的结点,再释放pos结点(避免pos后面结点失踪问题)*/
+	assert(L);
+	if (L->head == pos){
+		ListPopFront(L);
+	}
+	else if (pos->next == NULL){
+		ListPopBack(L);
+	}
+	else{
+		ListNode* cur = L->head;
+		for (; cur != NULL; cur = cur->next){
+			if (cur->next->next == pos->next){
+				cur->next = pos->next;
+				free(pos);
+				break;
+			}
+		}
+	}
+}
+
+void ListEraseAfter(ListNode* pos){//删除指定位置pos后的结点
+/*用一个临时指针指向pos的下一个结点,然后将pos的next置为临时指针的next(跳过要删除结点),最后释放temp避免结点失踪问题*/
+	assert(pos->next);
+	ListNode* temp = pos->next;
+	pos->next = temp->next;
+	free(temp);
+}
+
+void ListRemove(List* L, int x){//根据数据x删除结点
+/*用两个临时结点遍历列表，当找到目标结点的时候，用temp保存目标结点的上一个结点跳过目标结点连接下一个，最后释放目标结点*/
+	assert(L);
+	ListNode* cur = L->head;
+	ListNode* temp = NULL;
+	if (cur->data == x){//当要删除的数据是第一个节点时，直接头删
+		ListPopFront(L);
+		return;
+	}
+	else{
+		while (cur != NULL){//遍历链表
+			temp = cur;//保存上一个结点
+			cur = cur->next;
+			//这里的if...else语句顺序不能交换，因为当要删除的数据不存在时，会陷入死循环
+			if (cur == NULL){
+				printf("链表中不存在值为%d的结点无法删除\n", x);
+				return;
+			}
+			else if (cur->data == x){
+				temp->next = cur->next;
+				free(cur);
+				break;
+			}
+		}
+	}
+}
