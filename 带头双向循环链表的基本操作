@@ -1,0 +1,174 @@
+typedef struct ListNode{//结构体成员变量前加一个_有利于后面变量的命名进行区分
+	int _data;
+	struct ListNode* _next;
+	struct ListNode* _prev;
+}ListNode;
+typedef struct List{
+	struct ListNode* _head;
+}List;
+
+ListNode* BuyListNode(int x){//申请新结点
+/*申请结点空间，数据域置为x，前驱和后继指向NULL*/
+	ListNode *newnode = (ListNode*)malloc(sizeof(ListNode));
+	newnode->_data = x;
+	newnode->_prev = NULL;
+	newnode->_next = NULL;
+	return newnode;
+}
+
+void ListInit(List* L){//初始化链表
+/*申请节点空间，链表的头结点指向新结点，并使前驱，后继都指向新申请的结点*/
+	assert(L);
+	ListNode* head = BuyListNode(0);
+	head->_next = head;
+	head->_prev = head;
+	L->_head = head;
+}
+
+void ListDestory(List* L){//销毁链表
+/*直接从头结点开始往后释放会找不到后续结点，所以从第二个结点开始遍历链表并逐个释放结点，遍历完后释放头结点*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* cur = head->_next;
+	while (cur != head){//循环链表，最后一个节点的next指向head
+		ListNode* temp = cur->_next;
+		free(cur);
+		cur = head;
+	}
+	free(head);//最后释放head
+}
+
+void ListPushBack(List* L, int x){//尾插
+/*获取头结点和尾结点，然后调整头结点的前驱和尾结点的后继指向新节点，新节点的前驱指向头结点，后继指向尾结点*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* prev = head->_prev;//头结点的前驱就是尾结点
+	ListNode* node = BuyListNode(x);
+	//头结点的前驱指向新节点，尾结点的后继指向新结点；新结点的前驱指向尾结点，后继指向头结点
+	head->_prev = node;
+	prev->_next = node;
+	node->_prev = prev;
+	node->_next = head;
+}
+
+void ListPopBack(List* L){//尾删
+/*先获取到头结点和倒数第二个结点，然后释放尾结点，头结点的前驱指向新尾结点，新尾结点后继指向头结点*/
+	assert(L);//保证链表不为空
+	assert(L->_head->_next != L->_head);//保证链表有一个以上的结点
+	ListNode* head = L->_head;
+	ListNode* prev2 = head->_prev->_prev;//倒数第二个结点
+	free(head->_prev);//释放最后一个结点
+	head->_prev = prev2;
+	prev2->_next = head;
+}
+
+void ListPushFront(List* L, int x){//头插
+/*获取头结点和第二个结点，然后调整头结点的前驱和第二个结点的后继指向新结点，新结点的前驱指向头结点，后继指向第二个结点*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* cur = head->_next;
+	ListNode* node = BuyListNode(x);
+	//头结点的后继指向新结点，第二个结点的前驱指向新结点；新结点的前驱指向头结点，后继指向第二个结点
+	head->_next = node;
+	node->_next = cur;
+	cur->_prev = node;
+	node->_prev = head;
+}
+
+void ListPopFront(List* L){//头删
+/*获取头结点和第三个结点，释放第二个结点，最后使头结点后继指向第三结点，第三结点前驱指向头结点*/
+	assert(L);
+	assert(L->_head->_next);
+	ListNode* head = L->_head;
+	ListNode* next = head->_next->_next;
+	free(head->_next);
+	head->_next = next;
+	next->_prev = head;
+}
+
+ListNode* ListFind(List* L, int x){//查找链表中值为x的结点
+/*遍历链表，逐个结点比较数据域，返回符合目标的结点，链表中无值为x的结点则返回NULL*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* cur = head->_next;
+	for (ListNode* cur = head->_next; cur->_next != head; cur = cur->_next){
+		if (cur->_data == x){
+			return cur;
+		}
+	}
+	return NULL;
+}
+
+ListNode* ListPos(List* L, int pos){//寻找下标为pos的结点(下标从0开始，0是head结点)
+/*从第一个结点(不是head结点)开始，用一个while循环执行pos-1次next操作，即可得到下标为pos的结点*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* cur = head->_next;
+	while (--pos){//不能用后置--，会越界
+		cur = cur->_next;
+	}
+	return cur;
+}
+
+void ListInsert(ListNode* pos, int x){//在pos结点前插入结点(任意位置插入数据)
+/*获取pos的结点的上一个结点，然后申请一个新结点，使新结点指向上一个结点和pos结点，pos结点和上一个结点指向新结点*/
+	assert(pos);
+	ListNode* prev = pos->_prev;
+	ListNode* node = BuyListNode(x);
+	//上一个结点的后继和pos结点的前驱指向新结点，新结点的前驱指向上一个结点，后继指向新结点。
+	prev->_next = node;
+	node->_next = pos;
+	pos->_prev = node;
+	node->_prev = prev;
+}
+
+void ListErase(ListNode* pos){//删除pos位置的节点(任意位置删除数据)
+/*获取pos结点的上一个结点和下一个结点，然后释放pos结点，上一个结点的后继指向下一个结点，下一个结点的前驱指向上一个结点*/
+	assert(pos);
+	ListNode* next = pos->_next;
+	ListNode* prev = pos->_prev;
+	free(pos);
+	prev->_next = next;
+	next->_prev = prev;
+}
+
+void ListRemove(List* L, int x){//删除值为x的节点
+/*先找到值为x的结点，然后删除*/
+	assert(L&&L->_head->_next != L->_head);//链表不为空，且不止一个头结点
+	ListNode* head = L->_head;
+	ListNode* pos = ListFind(L, x);
+	if (pos != NULL){
+		ListNode* prev = pos->_prev;
+		ListNode* next = pos->_next;
+		prev->_next = next;
+		next->_prev = prev;
+	}
+	else{
+		printf("本链表中无此值！");
+	}
+}
+
+int ListSize(List* L){//链表的大小
+/*获取头结点和一个临时节点，用临时节点遍历链表，用计数器记录结点个数，返回计数器*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* cur = head->_next;
+	int count = 0;
+	while (cur != head){
+		count++;
+		cur = cur->_next;
+	}
+	return count;
+}
+
+void ListPrint(List* L){//打印链表
+/*获取头结点和一个临时节点，用临时节点遍历链表，逐个打印结点*/
+	assert(L);
+	ListNode* head = L->_head;
+	ListNode* cur = head->_next;
+	while (cur != head){
+		printf("%d  ", cur->_data);
+		cur = cur->_next;
+	}
+	printf("\n");
+}
