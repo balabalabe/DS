@@ -1,0 +1,68 @@
+void SeqListBubbleSort(SeqList* L){//冒泡排序
+/*从小到大排序*/
+    assert(L);
+    for(int i=0;i<L->size;i++){
+        for(int j=i+1;j<L->size;j++){
+            if(L->array[i]>L->array[j])
+                swap(L->array[i],L->array[j]);
+        }
+    }
+}
+void SeqListSelectSort(SeqList* L){//选择排序
+/*每次找出最大值和最小值分别放在数组的首部和尾部,缩小范围重复上面步骤*/
+    assert(L);
+    int begin=0;
+    int end=L->size-1;
+    while (begin<end){
+        int min=begin;
+        int max=begin;
+        for (int i=begin;i<end;i++){
+            if (L->array[i]<L->array[min]){
+                min=i;
+            }
+            if (L->array[i]>L->array[max]){
+                max=i;
+            }
+        }
+        Swap(&L->array[begin], &L->array[min]);
+        if (begin==max){
+            max=min;
+        }
+        Swap(&L->array[end], &L->array[max]);
+        begin++;
+        end--;
+    }
+}
+int SeqListBinaryFind(SeqList* L,int x){//二分查找元素x并返回下标,失败返回-1
+/*注意二分查找的死循环问题*/
+    assert(L)
+    int left=0;
+    int right=L->size-1;
+    SeqListBubbleSort(L);
+    while(left<right){
+        int mid=(left+right)/2;
+        if(L->array[mid]<x){
+            left=mid+1;
+        }
+        if(L->array[mid]>x){
+            right=mid-1
+        }
+        if(L->array[mid]==x){
+            return mid;
+        }
+    }
+    return -1
+}
+void SeqListRemoveAll(SeqList* L,int x){//删除列表中所有值为x的元素
+/*(重点):时间复杂度为O(N),空间复杂度为O(1)*/
+//思想:把值不为x的元素全部搬到前面,然后统计值不为x的元素的个数num,最后把size置为num
+    assert(L);
+    int num=0;
+    for(int i=0;i<L->size;i++){
+        if(L->array[i]!=x){
+            L->array[num]=L->array[i];//一开始i和num是相等的且增长速率相同
+            num++;//当出现值为x的元素时,num不增长而i++,两者开始处于覆盖关系,将不为x的元素覆盖在原来值为x的位置
+        }
+    }
+    L->size=num;//最后将size的大小设置num,顺序表里就没有值为x的元素了
+}
