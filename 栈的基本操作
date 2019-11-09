@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+
+//顺序栈类型 
+typedef struct{
+	int* _base;//存储空间的基址 
+	int* _top;//栈顶位标 
+	int _size;//当前分配的存储容量 
+	int _add;//扩容量
+}Stack;
+
+int InitStack(Stack &S, int size, int add){//初始化顺序栈
+	/*为栈底base申请空间，栈顶等于栈底，设置初始容量和每次扩容增加的量*/
+	S._base = (int*)malloc(size*sizeof(int));
+	if (S._base == NULL){
+		printf("栈为空\n");
+		return 0;
+	}
+	S._top = S._base;//置S为空栈
+	S._size = size;//初始容量值
+	S._add = add;//初始增量值
+	return 1;
+}
+
+int DestroyStack(Stack &S){//销毁顺序栈
+	/*释放栈底指针，base和top都指向空，size置为0*/
+	free(S._base);
+	S._base = NULL;
+	S._top = NULL;
+	S._size = 0;
+	return 1;
+}
+
+int StackEmpty(Stack &S){//栈的判空
+	/*判断栈是否为空，为空返回0，不为空返回1*/
+	if (S._top == S._base){
+		printf("栈为空\n");
+		return 0;
+	}
+	else{
+		printf("栈不为空\n");
+		return 1;
+	}
+}
+
+int ClearStack(Stack &S){//清空栈内元素
+	/*令栈顶等于栈底*/
+	S._top = S._base;
+	return 1;
+}
+
+int Push(Stack &S, int e){//入栈
+	/*容量检查，栈满则扩容，然后插入元素，top指向下一元素*/
+	if (S._top - S._base >= S._size){
+		int* newbase;  //创建一个新的指针
+		newbase = (int*)realloc(S._base, (S._size + S._add)*sizeof(int));
+		if (newbase = NULL){
+			printf("扩容失败\n");
+			return 0;
+		}
+		S._base = newbase;
+		S._top = S._base + S._size;//这一步不可省略,此处涉及realloc的扩容原理,扩容有两种情况
+		//1.需要扩容的内存后面有足够的空闲空间,则直接进行扩容,得到的是一块连续的内存,这种情况下是不需要对top进行操作的
+		//2.内存后没有足够的空闲空间,则会从堆中另找一块足够大的内存,将原内存空间的内容复制到新内存里,这时top就不是原来的top了
+		S._size = S._size + S._add;
+	}
+	*S._top = e;
+	S._top++;
+	return 1;
+}
+
+int Pop(Stack &S, int* e){//出栈
+	/*若栈不为空,则删除栈顶元素,并用指针e返回栈顶元素的值*/
+	if (S._top == S._base)
+		return 0;
+	S._top--;
+	*e = *S._top;
+	return 1;
+}
+
+int GetTop(Stack &S, int* e){//获取栈顶元素
+	/*获取栈顶元素，直接用e返回栈顶的元素，不需要删除栈顶元素*/
+	if (S._top == S._base){
+		return 0;
+	}
+	*e = *(S._top-1);
+	return 1;
+}
+
+int StackTraverse(Stack &S, int(*out)(int)){//栈遍历
+	/*自顶向下调用函数指针printf对栈进行遍历，逐个打印元素*/
+	int* temp = S._top;//用一个临时指针记录top指针原来的指向
+	while (S._top > S._base){
+		out(*(--S._top));
+	}
+	S._top = temp;//易错点,栈遍历后改变top指针的指向,影响后续操作
+	return 1;
+}
+
+int out(int e){//打印函数
+	/*将printf封装成函数，作为函数指针传入StackTraverse*/
+	printf("%d   ", e);
+	return 1;
+}
+
+int main(){
+	int* e = (int*)malloc(sizeof(int));
+	Stack s;
+	s._base = NULL;
+	InitStack(s, 10, 5);
+	StackEmpty(s);
+	Push(s, 1);
+	Push(s, 2);
+	Push(s, 3);
+	Push(s, 4);
+	StackEmpty(s);
+	StackTraverse(s, out);
+	
+	GetTop(s, e);
+	printf("返回的元素为%d\n",*e);
+
+	Pop(s, e);
+	StackTraverse(s, out);
+
+	ClearStack(s);
+	StackEmpty(s);
+
+	int a = DestroyStack(s);
+	if (a == 1){
+		printf("销毁成功");
+	}
+	return 0;
+}
