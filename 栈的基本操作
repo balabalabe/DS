@@ -89,7 +89,7 @@ int GetTop(Stack &S, int* e){//获取栈顶元素
 }
 
 int StackTraverse(Stack &S, int(*out)(int)){//栈遍历
-	/*自顶向下调用函数指针printf对栈进行遍历，逐个打印元素*/
+	/*自顶向下调用函数指针out对栈进行遍历，逐个打印元素*/
 	int* temp = S._top;//用一个临时指针记录top指针原来的指向
 	while (S._top > S._base){
 		out(*(--S._top));
