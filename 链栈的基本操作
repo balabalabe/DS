@@ -1,0 +1,95 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<malloc.h>
+
+typedef struct LinkStack{
+	int data;
+	LinkStack* next;
+}LinkStack;
+
+LinkStack* InitStack(){//初始化栈
+	LinkStack* head = (LinkStack*)malloc(sizeof(LinkStack));//栈顶指针变量
+	head->next = NULL;
+	return head;
+}
+
+int StackEmpty(LinkStack* head){//判空
+	if (head->next == NULL){//如果栈顶的指针域指向空，则栈空
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+int PushStack(LinkStack* head, int x){//入栈
+	LinkStack* node = (LinkStack*)malloc(sizeof(LinkStack));
+	if (node == NULL){
+		return 0;
+	}
+	else{
+		node->data = x;
+		node->next = head->next;
+		head->next = node;
+		return 1;
+	}
+}
+
+
+int PopStack(LinkStack* head, int* x){//出栈
+	LinkStack* node;
+	if (head->next == NULL){
+		return 0;
+	}
+	else{
+		node = head->next;
+		*x = node->data;
+		head->next = node->next;
+		free(node);
+		return 1;
+	}
+}
+
+int GetTop(LinkStack* head, int* x){//获取栈顶元素
+	if (head->next == NULL){
+		return 0;
+	}
+	else{
+		*x = head->next->data;
+		return 1;
+	}
+}
+
+int StackTraverse(LinkStack* head,int(*out)(int)){
+	LinkStack* temp = head;
+	while (head->next != NULL){
+		out(head->next->data);
+		head = head->next;
+	}
+	head = temp;
+	return 0;
+}
+
+int out(int x){
+	printf("%d  ", x);
+	return 1;
+}
+
+int main(){
+	LinkStack* p;
+	int* x = (int*)malloc(sizeof(int));
+	p = InitStack();
+	PushStack(p, 1);
+	PushStack(p, 2);
+	PushStack(p, 3);
+	PushStack(p, 4);
+	StackTraverse(p, out);
+	PopStack(p,x);
+	printf("弹出元素为%d\n", *x);
+	PushStack(p, 5);
+	GetTop(p, x);
+	printf("获取元素为%d\n", *x);
+	StackTraverse(p, out);
+	return 0;
+
+}
