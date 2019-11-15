@@ -73,6 +73,9 @@ void ClearQueue(Queue &q){//清空队列
 }
 
 void QueueTraverse(Queue &q){//打印队列中的与元素
+	if (IsEmpty(q)){
+		printf("队列为空!\n");
+	}
 	int temp = q._front;
 	while (q._rear - q._front > 0){
 		printf("%d  ", q._queue[q._front]);
@@ -103,5 +106,5 @@ int main(){
 	QueueTraverse(q);
 
 	ClearQueue(q);
-	QueueTraverse;
+	QueueTraverse(q);
 }
