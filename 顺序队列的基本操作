@@ -1,0 +1,107 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<malloc.h>
+
+
+typedef struct Queue{
+	int* _queue;
+	int _front;//队头下标
+	int _rear;//队尾下标(实际上指向最后一个元素的下一位)
+	int _capacity;//初始容量
+	int _add;//增容量
+}Queue;
+
+int InitQueue(Queue &q, int capacity, int add){//队列初始化，将队列初始化为空队列
+	q._queue = (int*)malloc(capacity*sizeof(int));
+	if (q._queue == NULL){
+		printf("队列初始化失败\n");
+		return 0;
+	}
+	q._rear = q._front = 0;//队首下标和队尾下标一起指向数组的第一个元素
+	q._capacity = capacity;
+	q._add = add;
+	return 1;
+}
+
+int IsEmpty(Queue &q){//判断队列为空
+	if (q._front == q._rear){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+int IsFull(Queue &q){//判断队列是否为满
+	if (q._rear - q._front >= q._capacity){
+		return 1;
+	}
+	else{
+		return 0;
+	}
+}
+
+int PushQueue(Queue &q, int x){//入队,将元素data插入到队列q中
+	if (IsFull(q)){
+		int* temp = (int*)realloc(q._queue, q._capacity + q._add);
+	}
+	q._queue[q._rear] = x;
+	q._rear++;
+	return 1;
+}
+
+int PopQueue(Queue &q, int* x){//出队，将队列中队头的元素data出队，出队后队头指针front后移一位
+	if (IsEmpty(q)){
+		printf("队列为空！\n");
+		return 0;
+	}
+	*x = q._queue[q._front];
+	q._front++;//数组申请的是一整块内存,释放也是一整块释放,所以不能出队一个释放一个,可以在程序运行完了后再整个释放
+	return 1;
+}
+
+int GetRear(Queue &q, int* x){//获取队首部元素
+	if (IsEmpty(q)){
+		printf("队列为空!\n");
+	}
+	*x = q._queue[q._front];
+	return 1;
+}
+
+void ClearQueue(Queue &q){//清空队列
+	q._front = q._rear = 0;
+}
+
+void QueueTraverse(Queue &q){//打印队列中的与元素
+	int temp = q._front;
+	while (q._rear - q._front > 0){
+		printf("%d  ", q._queue[q._front]);
+		q._front++;
+	}
+	q._front = temp;//复原rear的位置
+	printf("\n");
+}
+
+int main(){
+	Queue q;
+	int x;
+	InitQueue(q, 10, 5);
+	PushQueue(q, 1);
+	PushQueue(q, 2);
+	PushQueue(q, 3);
+	PushQueue(q, 4);
+	PushQueue(q, 5);
+
+	QueueTraverse(q);
+
+	PopQueue(q, &x);
+	printf("%d\n", x);
+
+	GetRear(q, &x);
+	printf("%d\n", x);
+
+	QueueTraverse(q);
+
+	ClearQueue(q);
+	QueueTraverse;
+}
